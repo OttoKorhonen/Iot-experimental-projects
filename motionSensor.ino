@@ -1,84 +1,59 @@
 #include <MPU6050_tockn.h>
 #include <Wire.h>
+#define I2C_SCL 21//määritellään mitä portteja lämpömittari ja gyroskooppi käyttää
+#define I2C_SDA 22
 
-//MPU6050 mpu6050(Wire);
-int settingComparisonValues() {//asetetaanko tähän parametriarvot, jotka lähetetään toiseen muuttujaan
+int previousX = -1;//edelliset mittausarvot
+int previousY  = -1;
+int previousZ  = -1;
 
- int i = 0;
- int cX;//vertailumuuttujat esim cX "comparisonX"
- int cY;
- int cZ;
+int currentX  = -1;//uudet mittausarvot
+int currentY  = -1;
+int currentZ  = -1;
+
+void motionSensor(){
+ previousX = currentX;//päivitetään edelliset mittausarvot uusiin
+ previousY = currentY;
+ previousZ = currentZ;
  
-  Serial.println("======================");
-  Serial.println("Itkuhälytin käynnistyy");
-  Serial.println("======================");
-  delay(2000);
-  while(i < 1000){
-    Serial.println("Asetetaan vertailuarvot");
-    cX = mpu6050.getAngleX();
-    Serial.println(cX);
-    cY = mpu6050.getAngleY();
-    Serial.println(cY);
-    cZ = mpu6050.getAngleZ();
-    Serial.println(cZ);
-    if(cX ==0 || cY == 0 || cZ == 0){
-      Serial.println("Ei hyväksyttyjä arvoja, lasketaan uudestaan");
-      mpu6050.update();
-      delay(1000);
-      continue;
-    }else{
-      Serial.println("Gyroskoopin arvot asetettu");
-    break;
+ mpu6050.update();//haetaan uudet arvot  mpu6050
+ currentX = mpu6050.getAngleX();//asetetaan X, Y ja Z kulmille uudet arvot
+ currentY = mpu6050.getAngleY();
+ currentZ = mpu6050.getAngleZ();
+ 
+ if(previousX != -1 || previousY != -1 || previousZ != -1){// tässä verrataan, että aikaisempi X:n arvo ei ole vanha previousX
+ // Serial.println("Ei -1");
+  int difX = abs(previousX - currentX);
+  //Serial.print("X:n erotus "); Serial.println(difX);
+  int difY = abs(previousY - currentY);
+  //Serial.print("Y:n erotus ");Serial.println(difY);
+  int difZ = abs(previousZ - currentZ);
+  //Serial.print("Z:n erotus ");Serial.println(difZ);
+
+  int difTotal = difX + difY + difZ;//lasketaan yhteen X, Y ja Z kulmien summa
+  //Serial.println(difTotal);
+  //unsigned long timer = millis();
+ 
+  if(difTotal > 10){
+    Serial.println("Liikettä");
+    counter++;
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(500);
+    digitalWrite(LED_BUILTIN, LOW);
+    Serial.print("Laskuri: "); Serial.println(counter);
+    delay(500);
+    if(counter >= 5){
+      msg="Itkuhälytin ilmoitus! Havaittu jatkuvaa liikettä";
+      sendMessage();
+      delay(100000);
     }
-  }
-  delay(2000);
-  Serial.println("");
-  Serial.println("Arvot asetettu");
-  Serial.print("Annettu arvo X: " ); Serial.println(cX);
-  Serial.print("Annettu arvo Y: " ); Serial.println(cY);
-  Serial.print("Annettu arvo Z: " ); Serial.println(cZ);
-
-  compareValues(cX, cY, cZ);//kutsutaan compareValues funktiota, joka saa tästä arvot käyttöönsä?
-  return cX, cY, cZ;
+ }
+ if((unsigned long)(millis() - previousMillis) >= interval && counter < 5){
+      counter = 0;
+      Serial.println("Laskuri on nollattu");
+      previousMillis = currentMillis;
+      delay(500);
+      resetFunc();//kutsutaan uudelleenkäynnistysfunktiota
+    }
 }
-
-int compareValues(int cX, int cY, int cZ){
-  int i =0;
-  unsigned long previousTime = 0;
-  const int timeLimit = 5000;
-  int timer = millis();
-  int counter = 1;
-  int interval = mpu6050.getAngleX() -cX;
-  int X;// = mpu6050.getAngleX();
-  int Y;// = mpu6050.getAngleY();
-  int Z;// = mpu6050.getAngleZ();
-  //mpu6050.calcGyroOffsets(X);
-  //mpu6050.calcGyroOffsets(Y);
-  //mpu6050.calcGyroOffsets(Z);
-
-  Serial.println("Vertaillaan arvoja loopissa");
-  
-  mpu6050.update();
-  
-  while(counter < 6){
-    
-   if(mpu6050.getAngleX() > (cX*5) || mpu6050.getAngleY() > (cY*5) || mpu6050.getAngleZ() > (cZ*5)){
-     Serial.print("Tässä on X: "); Serial.println(mpu6050.getAngleX());
-     Serial.print("cX: "); Serial.println(cX);
-     Serial.print("");
-     Serial.print("Tässä on Y: "); Serial.println(mpu6050.getAngleY());
-     Serial.print("cY: "); Serial.println(cY);
-     Serial.print("");
-     Serial.print("Tässä on Z: "); Serial.println(mpu6050.getAngleZ());
-     Serial.print("cZ: "); Serial.println(cZ);
-     Serial.print("Counter: "); Serial.println(counter);
-     Serial.print("");
-     delay(1000);
-     mpu6050.update();
-     Serial.print("Ajastin: "); Serial.println(timer);
-     delay(1000);
-     timer = 0;
-   }
-  }
-  sendMessage();
 }

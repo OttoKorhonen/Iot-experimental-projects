@@ -1,7 +1,8 @@
 #define snd39 39 //mikrofonin portti
+int dB;
 
-void soundDetection() {
-  
+int soundDetection() {
+  double volts;
   const int sampleWindow = 100;
   unsigned int sample;
 
@@ -28,6 +29,22 @@ void soundDetection() {
       }
    }
    peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
-   double volts = (peakToPeak * 5.0) / 1024;  // convert to volts
-   Serial.println(volts); //tulostetaan volttien määrä Vr = V2/V1
+   volts = (peakToPeak * 5.0) / 1024;  //luvut muutetaan volteiksi
+   //Serial.println(volts); //tulostetaan volttien määrä Vr = V2/V1
+   dB = volts*20;
+   Serial.print("Decibelejä: "); Serial.println(dB);
+
+   if(dB > 35){
+    Serial.println("Kova ääni");
+    counter++;
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(200);
+    digitalWrite(LED_BUILTIN, LOW);
+    Serial.print("Laskuri: "); Serial.println(counter);
+    if(counter >= 5){
+      msg="Itkuhälytin ilmoitus! Havaittu ääntä!";
+      sendMessage();
+      delay(1000000);
+    }
+   }
 }
