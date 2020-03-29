@@ -32,7 +32,6 @@ void motionSensor(){
 
   int difTotal = difX + difY + difZ;//lasketaan yhteen X, Y ja Z kulmien summa
   //Serial.println(difTotal);
-  //unsigned long timer = millis();
  
   if(difTotal > 10){
     Serial.println("Liikettä");
