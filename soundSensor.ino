@@ -15,7 +15,10 @@ int soundDetection() {
    // collect data for 50 mS
    while(millis() - startMillis < sampleWindow)
    {
+    
       sample = analogRead(snd39);
+      sample = sample - 2900;
+      //Serial.println(sample);
       if (sample < 1024)  // toss out spurious readings
       {
          if (sample > signalMax)
@@ -28,13 +31,13 @@ int soundDetection() {
          }
       }
    }
+   //Serial.println(signalMin);
+   //Serial.println(signalMax);
    peakToPeak = signalMax - signalMin;  // max - min = peak-peak amplitude
    volts = (peakToPeak * 5.0) / 1024;  //luvut muutetaan volteiksi
-   //Serial.println(volts); //tulostetaan volttien määrä Vr = V2/V1
-   dB = volts*20;
-   Serial.print("Decibelejä: "); Serial.println(dB);
+   Serial.println(volts); //tulostetaan volttien määrä Vr = V2/V1
 
-   if(dB > 35){
+   if(volts > 0.8){
     Serial.println("Kova ääni");
     counter++;
     digitalWrite(LED_BUILTIN, HIGH);
