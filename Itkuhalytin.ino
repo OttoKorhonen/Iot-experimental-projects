@@ -2,8 +2,8 @@
 #include <MPU6050_tockn.h>
 #include <Wire.h>
 MPU6050 mpu6050(Wire);
-const char* ssid = "IidaIid"; //asetetaan wifi salasana ja tunnus
-const char* password = "Iidaonparas";
+const char* ssid = ""; //asetetaan wifi salasana ja tunnus
+const char* password = "";
 int LED_BUILTIN = 2;
 String msg;
 int counter;
