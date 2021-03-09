@@ -11,9 +11,9 @@ int interval = 50000;
 unsigned long previousMillis = 0;
 unsigned long currentMillis = millis();
 
-#define emailSenderAccount    "rndmgnm@gmail.com"    
-#define emailSenderPassword   "paskojavihanneksia"
-#define emailRecipient        "otto@xd.fi"
+#define emailSenderAccount    "lähettävä spostiosoite"    
+#define emailSenderPassword   "salasana"
+#define emailRecipient        "vastaanottaja"
 #define smtpServer            "smtp.gmail.com"
 #define smtpServerPort        465
 #define emailSubject          "Itkuhälytin ilmoitus"
